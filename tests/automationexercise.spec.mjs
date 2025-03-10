@@ -1,172 +1,71 @@
-const { test, expect} = require('@playwright/test');
-const exp = require('node:constants');
-// import { test, expect } from "@playwright/test";
+import { test, expect } from '@playwright/test';
+import { LoginPage } from '../pages/LoginPage.mjs';
+import { RegisterPage } from '../pages/RegisterPage.mjs';
+import { ContactUsPage } from '../pages/ContastUsPage.mjs';
+import { TestCasePage } from '../pages/TestCasePage.mjs';
 
-test('TC01 Register User', async ({ page }) =>{
-    await page.goto('https://automationexercise.com');
-    async function checkPageInfo(page) {
-        const pageTitle = await page.title();
-        const pageUrl = page.url();
-        console.log('Page title is:', pageTitle);
-        console.log('Page URL is:', pageUrl);
-    };
-    await checkPageInfo(page);
-    await expect(page).toHaveTitle('Automation Exercise');
-    await expect(page).toHaveURL('https://automationexercise.com');
-    await page.locator('a[href="/login"]').click();
-    await expect(page).toHaveURL('https://automationexercise.com/login');
-    await expect (page.locator('.signup-form h2')).toHaveText('New User Signup!');
-    await page.locator('[data-qa="signup-name"]').fill('Dummyuser')
-    await page.locator('[data-qa="signup-email"]').fill('otomesentesting123@gmail.com');
-    await page.locator('[data-qa="signup-button"]').click();
-    await expect (page.locator(".login-form b:has-text('Enter Account Information')")).toBeVisible();
-    await page.locator('#uniform-id_gender2').check();
-    await page.locator('#password').fill('Test_123');
-    await page.locator('#days').selectOption('1');
-    await page.locator('#months').selectOption('1');
-    await page.locator('#years').selectOption('1999');
-    await page.locator('#newsletter').check();
-    await page.locator('#optin').check();
-    await page.locator('#first_name').fill('QA');
-    await page.locator('#last_name').fill('Test');
-    await page.locator('#company').fill('XYC ');
-    await page.locator('#address1').fill('Jalan Jambu No 29');
-    await page.locator('#address2').fill('Jalan Mangga No 30');
-    await page.locator('#country').selectOption('United States');
-    await page.locator('#state').fill('Dummy state');
-    await page.locator('#city').fill('Dummy city');
-    await page.locator('#zipcode').fill('123456');
-    await page.locator('#mobile_number').fill('081234567890');
-    await page.locator("[data-qa='create-account']").click();
-    await expect(page.locator("h2[class='title text-center'] b")).toBeVisible();
-    await page.locator('[data-qa="continue-button"]').click();
-    await expect(page.getByText('Logged in as Dummyuser')).toBeVisible();
-    await page.locator("a[href='/delete_account']").click();
-    await expect(page.getByText('Account Deleted!')).toBeVisible();
-    await page.close();
+test('TC01: Register User', async ({ page }) =>{
+    const registerPage = new RegisterPage(page);
+    const loginPage = new LoginPage(page);
+    await registerPage.navigateToRegister();
+    await registerPage.submitSignup('Dummy User','dummyusertest098@gmail.com');
+    await registerPage.verifyRegisterForm();
+    await registerPage.selectFemaleGender();
+    await registerPage.inputPassword('Test_123');
+    await registerPage.inputBirthDate('20','1','1999');
+    await registerPage.selectSubscriptionOptions();
+    await registerPage.inputName('Dummy','User');
+    await registerPage.inputCompany('PT. Dummy Agung Sentosa Jaya');
+    await registerPage.inputAddress('Jln. Mangga No 29 Onan Raja','Jln. Alpukat No 30 Onan Ratu');
+    await registerPage.inputLocation('United States','Dummy state','Dummy city','123456');
+    await registerPage.inputPhoneNumber('082123242526');
+    await registerPage.submitRegistration();
+    await loginPage.verifyLogin('Dummy User');
+    await registerPage.deleteAccount();
 });
-test('TC02 Login user with correct email & password', async ({ page }) =>{
-    await page.goto('https://automationexercise.com');
-    async function checkPageInfo(page) {
-        const pageTitle = await page.title();
-        const pageUrl = page.url();
-        console.log('Page title is:', pageTitle);
-        console.log('Page URL is:', pageUrl);
-    };
-    await checkPageInfo(page);
-    await expect(page).toHaveTitle('Automation Exercise');
-    await expect(page).toHaveURL('https://automationexercise.com');
-    await page.locator("a[href='/login']").click();
-    await page.locator("[data-qa='login-email']").fill('siahaanelsa3@gmail.com');
-    await page.getByPlaceholder('Password').fill('123abc');
-    await page.locator("[data-qa='login-button']").click();
-    await expect(page.getByText('Logged in as QA_Test')).toBeVisible();
+test('TC02: Login user with correct email & password', async ({ page }) =>{
+    const loginPage = new LoginPage(page);
+    await loginPage.navigateToLogin();
+    await loginPage.login('siahaanelsa3@gmail.com','123abc');
+    await loginPage.verifyLogin('QA_Test');
 });
-test('TC03 Login user with incorrect email & password', async ({ page }) =>{
-    await page.goto('https://automationexercise.com');
-    async function checkPageInfo(page) {
-        const pageTitle = await page.title();
-        const pageUrl = page.url();
-        console.log('Page title is:', pageTitle);
-        console.log('Page URL is:', pageUrl);
-    };
-    await checkPageInfo(page);
-    await expect(page).toHaveTitle('Automation Exercise');
-    await expect(page).toHaveURL('https://automationexercise.com');
-    await page.locator('a[href="/login"]').click();
-    await page.locator("[data-qa='login-email']").fill('testincorrect@gmail.com');
-    await page.getByPlaceholder('Password').fill('incorrect_password');
-    await page.locator("[data-qa='login-button']").click();
-    await expect(page.getByText('Your email or password is incorrect!')).toBeVisible();
+test('TC03: Login user with incorrect email & password', async ({ page }) =>{
+    const loginPage = new LoginPage(page);
+    await loginPage.navigateToLogin();
+    await loginPage.login('errorlogintest@gmail.com','errorlogintest')
+    await loginPage.verifyLoginError();
 });
-test('TC04 Logout User', async ({ page }) =>{
-    await page.goto('https://automationexercise.com');
-    async function checkPageInfo(page) {
-        const pageTitle = await page.title();
-        const pageUrl = page.url();
-        console.log('Page title is:', pageTitle);
-        console.log('Page URL is:', pageUrl);
-    };
-    await checkPageInfo(page);
-    await expect(page).toHaveTitle('Automation Exercise');
-    await expect(page).toHaveURL('https://automationexercise.com');
-    await page.locator('a[href="/login"]').click();
-    await page.locator("[data-qa='login-email']").fill('siahaanelsa3@gmail.com');
-    await page.getByPlaceholder('Password').fill('123abc');
-    await page.locator("[data-qa='login-button']").click();
-    await expect(page.getByText('Logged in as QA_Test')).toBeVisible();
-    await page.locator("a[href='/logout']").click();
-    await expect(page).toHaveURL(/.*login.*/);
+test('TC04: Logout User', async ({ page }) =>{
+    const loginPage = new LoginPage(page);
+    await loginPage.navigateToLogin();
+    await loginPage.login('siahaanelsa3@gmail.com','123abc');
+    await loginPage.verifyLogin('QA_Test');
+    await loginPage.logout();
 });
-test('TC05 Register user with existing email', async ({ page }) =>{
-    await page.goto('https://automationexercise.com');
-    async function checkPageInfo(page) {
-        const pageTitle = await page.title();
-        const pageUrl = page.url();
-        console.log('Page title is:', pageTitle);
-        console.log('Page URL is:', pageUrl);
-    };
-    await checkPageInfo(page);
-    await expect(page).toHaveTitle('Automation Exercise');
-    await expect(page).toHaveURL('https://automationexercise.com');
-    await page.locator('a[href="/login"]').click();
-    await expect (page.locator('.signup-form h2')).toHaveText('New User Signup!');
-    await page.locator('[data-qa="signup-name"]').fill('QA_Tester');
-    await page.locator('[data-qa="signup-email"]').fill('siahaanelsa3@gmail.com');
-    await page.locator('[data-qa="signup-button"]').click();
-    await expect(page.getByText('Email Address already exist!')).toBeVisible();
+test('TC05: Register user with existing email', async ({ page }) =>{
+    const registerPage = new RegisterPage(page);
+    await registerPage.navigateToRegister();
+    await registerPage.submitSignup('QA_Tester','siahaanelsa3@gmail.com');
+    await registerPage.verifySignupError();
 });
-test('TC06 Contact Us Form', async ({ page }) =>{
-    await page.goto('https://automationexercise.com');
-    async function checkPageInfo(page) {
-        const pageTitle = await page.title();
-        const pageUrl = page.url();
-        console.log('Page title is:', pageTitle);
-        console.log('Page URL is:', pageUrl);
-    };
-    await checkPageInfo(page);
-    await expect(page).toHaveTitle('Automation Exercise');
-    await expect(page).toHaveURL('https://automationexercise.com');
-    await page.locator("a[href='/contact_us']").click();
-    await expect(page.locator("div[class='contact-form'] h2[class='title text-center']")).toBeVisible();
-    await page.getByPlaceholder('Name').fill('QA_Test');
-    await page.getByPlaceholder('Email', { exact: true }).fill('siahaanelsa3@gmail.com');
-    await page.getByPlaceholder('Subject').fill('Test contact us form');
-    await page.getByPlaceholder('Your Message Here').fill('Hello, I recently made a purchase on your website, but I am facing an issue. The product I received does not match the description on your website, and I would like to request a refund or an exchange. I have attached some images as proof of the issue. Additionally, I tried contacting your support team via phone, but I was unable to reach anyone. Please assist me as soon as possible. Thank you.');
-    await page.locator('input[name="upload_file"]').setInputFiles('./tests/fixtures/file_test.png');
-    page.on('dialog', dialog => dialog.accept());
-    await page.locator("input[value='Submit']").click();
-    await expect(page.locator('.status.alert.alert-success').getByText("Success! Your details have been submitted successfully.")).toBeVisible();
-    await page.locator('.btn.btn-success').click();
+test('TC06: Contact Us Form', async ({ page }) =>{
+    const contactUsPage = new ContactUsPage(page);
+    await contactUsPage.navigateToContactUs();
+    await contactUsPage.verifyContactUsPage();
+    await contactUsPage.inputNameEmail('Dummy User','testdummyuser1@gmail.com');
+    await contactUsPage.inputSubject('Test Contact Us Form Using Playwright');
+    await contactUsPage.inputMessage('Playwright is a powerful, open-source automation framework developed by Microsoft that enables reliable end-to-end testing for modern web applications. Unlike traditional testing tools, Playwright offers cross-browser compatibility with support for Chromium, Firefox, and WebKit, allowing developers to ensure their applications work flawlessly across different browser engines with a single API.');
+    await contactUsPage.uploadFile(`./tests/fixtures/file_test.png`);
+    await contactUsPage.submit();
+    await contactUsPage.verifySuccessSubmit();
+    await contactUsPage.navigateToHome()
+
 });
-test('TC07 Verify AllTest Case Page', async ({ page }) =>{
-    await page.goto('https://automationexercise.com');
-    async function checkPageInfo(page) {
-        const pageTitle = await page.title();
-        const pageUrl = page.url();
-        console.log('Page title is:', pageTitle);
-        console.log('Page URL is:', pageUrl);
-    }
-    await checkPageInfo(page);
-    await expect(page).toHaveURL('https://automationexercise.com');
-    await page.locator("header[id='header'] li:nth-child(5) a:nth-child(1)").click();
-    await checkPageInfo(page);
-    await expect(page.locator("h2[class='title text-center'] b")).toHaveText('Test Cases');
-    await expect(page.locator("div[class='panel-group'] h5 span")).toHaveText('Below is the list of test Cases for you to practice the Automation. Click on the scenario for detailed Test Steps:');
-    const testCaseCount = await page.locator("a[data-toggle='collapse'][href^='#collapse']").count();
-    for (let i = 1; i <= testCaseCount; i++) {
-        const testCase = page.locator(`(//a[@data-toggle='collapse'])[${i}]`);
-        if (!(await testCase.isVisible())){
-            console.log(`Element ke-${i} tidak ada`);
-            continue;
-        }
-        const testName = await page.locator(`(//a[@data-toggle='collapse'])[${i}]//u`).textContent();
-        console.log(`------${testName}-----`);
-        await testCase.click();
-        const listTexts = await page.locator(`//div[@id='collapse${i}']//ul[@class='list-group']//li`).allTextContents();
-        console.log(listTexts);
-        await testCase.click();
-    }
+test('TC07: Verify AllTest Case Page', async ({ page }) =>{
+    const testCasePage = new TestCasePage(page);
+    await testCasePage.navigateToTestCase();
+    await testCasePage.verifyTestCasePage('Test Cases','Below is the list of test Cases for you to practice the Automation. Click on the scenario for detailed Test Steps:')
+    await testCasePage.printAllTestCaseScenario();
 });
 test('TC8 Verify All Product and Product Detail Page', async ({ page }) =>{
     await page.goto('https://automationexercise.com');
